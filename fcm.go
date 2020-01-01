@@ -21,10 +21,9 @@ func sendToken(app *firebase.App) bool {
 		return false
 
 	}
-	registrationToken := "hU6DCNDkGGBn40Dixd0hFy2m6bvm-7g0VCIq2n09_QXdpWxCy6Z"
 	message := &messaging.Message{
 		Data:  creatMessage("TITLE", "MESSAGE"),
-		Token: registrationToken,
+		Token: testToken,
 	}
 
 	response, err := client.Send(ctx, message)
