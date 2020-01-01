@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime"
 	"time"
 
-	firebase "firebase.google.com/go"
 	"github.com/gin-gonic/gin"
 )
 
 /**
 Router Setting
 */
-func ginRouter(app *firebase.App) *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
@@ -30,11 +29,7 @@ func ginRouter(app *firebase.App) *gin.Engine {
 		)
 	}))
 
-	router.GET("/ping", pong)
-	router.GET("/fcm/:offset/:count", fcmList)
-	router.POST("fcm", fcmSendTo)
 	router.POST("/fcm/multicast", fcmMultiCast)
-	router.Run(":5000")
 	return router
 }
 
@@ -47,10 +42,7 @@ func pong(gc *gin.Context) {
 GET FCM Token List, offset / count
 */
 func fcmList(gc *gin.Context) {
-	offset := gc.Params.ByName("offset")
-	count := gc.Params.ByName("count")
 	if offset == "" || count == "" {
-		gc.JSON(http.StatusBadRequest, createBR())
 	}
 	fmt.Print("offset : ", offset, "count : ", count)
 
@@ -65,16 +57,13 @@ POST FCM, Send Message From A To B
 */
 func fcmSendTo(gc *gin.Context) {
 	var request Request
-	gc.BindJSON(&request)
-	if request.Code == 0 || request.From == "" || request.To == nil || request.Message.validateData() {
-		gc.JSON(http.StatusBadRequest, createBR())
 	}
 
 	from := request.From // string
 	to := request.To     // []string
-	message := creatMessage(request.Message.Title, request.Message.Body)
 	// TODO sendMessage with goroutine
-	log.Print("FROM : ", from, "TO : ", to, "MESSSAGE : ", message)
+
+	sendMessage(&request)
 	gc.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
@@ -83,10 +72,6 @@ FCM MultiCast
 */
 func fcmMultiCast(gc *gin.Context) {
 	var request Request
-	gc.BindJSON(&request)
-	if request.Code == 0 || request.To == nil || request.Message.validateData() {
-		gc.JSON(http.StatusBadRequest, createBR())
-		return
 	}
 	gc.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
@@ -97,14 +82,9 @@ func (data *Message) validateData() bool {
 }
 
 func main() {
-	firebaseApp := initializeAppWithServiceAccount() // TODO to Singleton
-	if firebaseApp != nil {
-		log.Print("[FCM SEND MESSAGE]")
-		isComplete := sendToken(firebaseApp)
-		if !isComplete {
-			log.Fatal("[FCM SEND MESSAGE FAILED, EXIT NOW")
-		}
-	}
+	runtime.GOMAXPROCS(4)
 
 	log.Print("[FCM SERVER START]")
+	router := ginRouter()
+	router.Run(":5000")
 }
