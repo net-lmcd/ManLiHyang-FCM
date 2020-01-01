@@ -13,6 +13,7 @@ import (
 /**
 Router Setting
 */
+func ginRouter() *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
@@ -29,6 +30,9 @@ Router Setting
 		)
 	}))
 
+	router.GET("/fcm/ping", pong)
+	router.GET("/fcm", fcmList) // /fcm?offset=0&count=10
+	router.POST("/fcm", fcmSendTo)
 	router.POST("/fcm/multicast", fcmMultiCast)
 	return router
 }
@@ -42,7 +46,10 @@ func pong(gc *gin.Context) {
 GET FCM Token List, offset / count
 */
 func fcmList(gc *gin.Context) {
+	offset := gc.DefaultQuery("offset", "0")
+	count := gc.DefaultQuery("count", "10")
 	if offset == "" || count == "" {
+		gc.JSON(http.StatusBadRequest, createBasicBR())
 	}
 	fmt.Print("offset : ", offset, "count : ", count)
 
@@ -57,11 +64,14 @@ POST FCM, Send Message From A To B
 */
 func fcmSendTo(gc *gin.Context) {
 	var request Request
+	if err := gc.ShouldBindJSON(&request); err != nil {
+		gc.JSON(http.StatusBadRequest, createBR(err))
 	}
 
 	from := request.From // string
 	to := request.To     // []string
 	// TODO sendMessage with goroutine
+	log.Print("FROM : ", from, "TO : ", to)
 
 	sendMessage(&request)
 	gc.JSON(http.StatusOK, gin.H{"status": "ok"})
@@ -72,6 +82,8 @@ FCM MultiCast
 */
 func fcmMultiCast(gc *gin.Context) {
 	var request Request
+	if err := gc.ShouldBindJSON(&request); err != nil {
+		gc.JSON(http.StatusBadRequest, createBR(err))
 	}
 	gc.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
