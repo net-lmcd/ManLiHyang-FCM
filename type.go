@@ -1,6 +1,9 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	firebase "firebase.google.com/go"
+	"github.com/gin-gonic/gin"
+)
 
 /**
 {
@@ -15,26 +18,37 @@ import "github.com/gin-gonic/gin"
 
 //Slices which return tokens
 type Slices struct {
-	S []string `json:"fcm_tokens"`
+	S []string `json:"fcm_tokens" binding:"required"`
 }
 
 //Message for fcm message
 type Message struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	Title string `json:"title" binding:"required"`
+	Body  string `json:"body" binding:"required"`
 }
 
 //Request object format, For MultiCast / 운영용
 type Request struct {
-	Code    int      `json:"service_code"`
-	From    string   `json:"from"`
-	To      []string `json:"to"`
-	Message Message  `json:"data"`
+	Code    int      `json:"service_code" binding:"required"`
+	From    string   `json:"from" binding:"required"`
+	To      []string `json:"to" binding:"required"`
+	Message Message  `json:"data" binding:"required"`
 }
 
-func createBR() gin.H {
+//FirebaseApp for singleton
+type FirebaseApp struct {
+	app firebase.App
+}
+
+func createBasicBR() gin.H {
 	return gin.H{
 		"status": "BAD REQUEST",
-		"error":  "check your request",
+	}
+}
+
+func createBR(err error) gin.H {
+	return gin.H{
+		"status": "BAD REQUEST",
+		"error":  err.Error(),
 	}
 }
