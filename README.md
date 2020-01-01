@@ -3,12 +3,12 @@ FCM, ManLiHyang Application
 
 ### firebase-admin sdk
 ```bash
-go get firebase.google.com/go
+$go get firebase.google.com/go
 ```
 
 ### gin framework
 ```bash
-go get -u github.com/gin-gonic/gin
+$go get -u github.com/gin-gonic/gin
 ```
 
 ### usage 
@@ -19,4 +19,10 @@ import (
 	firebase "firebase.google.com/go"
 	"github.com/gin-gonic/gin"
 )
+```
+
+### run server
+```bash
+$go build
+$./ManLiHyang 
 ```
