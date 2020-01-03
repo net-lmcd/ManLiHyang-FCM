@@ -35,6 +35,19 @@ type Request struct {
 	Message Message  `json:"data" binding:"required"`
 }
 
+//TokenRequest object format
+type TokenRequest struct {
+	Usn   string `json:"usn" binding:"required"`
+	Token string `json:"token" binding:"required"`
+}
+
+//Response object format
+type Response struct {
+	Time int      `json:"timestamp" binding:"required"`
+	Code int      `json:"service_code" binding:"required"`
+	Data []string `json:"data"`
+}
+
 //FirebaseApp for singleton
 type FirebaseApp struct {
 	app firebase.App
@@ -50,5 +63,12 @@ func createBR(err error) gin.H {
 	return gin.H{
 		"status": "BAD REQUEST",
 		"error":  err.Error(),
+	}
+}
+
+func createSR() gin.H {
+	return gin.H{
+		"status": "INTERNAL SERVER ERROR",
+		"error":  "알 수 없는 장애",
 	}
 }
