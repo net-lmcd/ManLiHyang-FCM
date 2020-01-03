@@ -32,7 +32,9 @@ func ginRouter() *gin.Engine {
 
 	router.GET("/fcm/ping", pong)
 	router.GET("/fcm", fcmList) // /fcm?offset=0&count=10
-	router.POST("/fcm", fcmSendTo)
+	router.GET("/fcm/:usn", findFcmToken)
+	router.POST("/fcm", saveFcmTokem)
+	router.POST("/fcm/message", fcmSendTo)
 	router.POST("/fcm/multicast", fcmMultiCast)
 	return router
 }
@@ -57,6 +59,43 @@ func fcmList(gc *gin.Context) {
 
 	slice := Slices{[]string{"a", "b", "c", "d", "e"}}
 	gc.JSON(http.StatusOK, slice)
+}
+
+/**
+FCM TOKEN 조회 by usn
+*/
+func findFcmToken(gc *gin.Context) {
+	usn := gc.Params.ByName("usn")
+	// search token by usn
+	response := new(Response)
+	response.Time = 0
+	response.Code = 1003
+
+	// tokens = io operation
+	result := findTokenByUsn(usn)
+	if result == nil {
+		gc.JSON(http.StatusInternalServerError, createSR())
+	}
+	response.Data = result
+	gc.JSON(http.StatusOK, response)
+}
+
+func saveFcmTokem(gc *gin.Context) {
+	var request TokenRequest
+	if err := gc.ShouldBindJSON(&request); err != nil {
+		gc.JSON(http.StatusBadRequest, createBR(err))
+	}
+
+	usn := request.Usn
+	token := request.Token
+	isSaved := saveToken(token, usn)
+	if !isSaved {
+		gc.JSON(http.StatusInternalServerError, createSR())
+	}
+	response := new(Response)
+	response.Time = 0
+	response.Code = 1003
+	gc.JSON(http.StatusOK, response)
 }
 
 /**
@@ -99,4 +138,5 @@ func main() {
 	log.Print("[FCM SERVER START]")
 	router := ginRouter()
 	router.Run(":5000")
+
 }

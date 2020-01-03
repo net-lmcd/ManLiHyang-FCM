@@ -22,6 +22,7 @@ func init() {
 	log.Printf("[FIREBASE.APP INIT COMPLETED]")
 	getFcmClient()
 	log.Printf("[FCM CLIENT INIT COMPLETED]")
+	initDatabase()
 }
 
 func getFirebaseInstance() *firebase.App {
