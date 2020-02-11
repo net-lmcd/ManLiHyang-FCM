@@ -11,13 +11,19 @@ $go get firebase.google.com/go
 $go get -u github.com/gin-gonic/gin
 ```
 
+### go-mysql driver 
+```bash
+$go get -u github.com/go-sql-driver/mysql
+```
+
 ### usage 
 ```go
 import (
-    "net/http"
-    
+    	"net/http"
 	firebase "firebase.google.com/go"
 	"github.com/gin-gonic/gin"
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
 )
 ```
 
